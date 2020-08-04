@@ -1,6 +1,5 @@
+console.warn( "THREE.ConvolutionShader: As part of the transition to ES6 Modules, the files in 'examples/js' were deprecated in May 2020 (r117) and will be deleted in December 2020 (r124). You can find more information about developing using ES6 Modules in https://threejs.org/docs/#manual/en/introduction/Installation." );
 /**
- * @author alteredq / http://alteredqualia.com/
- *
  * Convolution shader
  * ported from o3d sample to WebGL / GLSL
  * http://o3d.googlecode.com/svn/trunk/samples/convolution.html
@@ -11,15 +10,15 @@ THREE.ConvolutionShader = {
 	defines: {
 
 		"KERNEL_SIZE_FLOAT": "25.0",
-		"KERNEL_SIZE_INT": "25",
+		"KERNEL_SIZE_INT": "25"
 
 	},
 
 	uniforms: {
 
-		"tDiffuse":        { type: "t", value: null },
-		"uImageIncrement": { type: "v2", value: new THREE.Vector2( 0.001953125, 0.0 ) },
-		"cKernel":         { type: "fv1", value: [] }
+		"tDiffuse": { value: null },
+		"uImageIncrement": { value: new THREE.Vector2( 0.001953125, 0.0 ) },
+		"cKernel": { value: [] }
 
 	},
 
@@ -31,8 +30,8 @@ THREE.ConvolutionShader = {
 
 		"void main() {",
 
-			"vUv = uv - ( ( KERNEL_SIZE_FLOAT - 1.0 ) / 2.0 ) * uImageIncrement;",
-			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		"	vUv = uv - ( ( KERNEL_SIZE_FLOAT - 1.0 ) / 2.0 ) * uImageIncrement;",
+		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
 		"}"
 
@@ -49,17 +48,17 @@ THREE.ConvolutionShader = {
 
 		"void main() {",
 
-			"vec2 imageCoord = vUv;",
-			"vec4 sum = vec4( 0.0, 0.0, 0.0, 0.0 );",
+		"	vec2 imageCoord = vUv;",
+		"	vec4 sum = vec4( 0.0, 0.0, 0.0, 0.0 );",
 
-			"for( int i = 0; i < KERNEL_SIZE_INT; i ++ ) {",
+		"	for( int i = 0; i < KERNEL_SIZE_INT; i ++ ) {",
 
-				"sum += texture2D( tDiffuse, imageCoord ) * cKernel[ i ];",
-				"imageCoord += uImageIncrement;",
+		"		sum += texture2D( tDiffuse, imageCoord ) * cKernel[ i ];",
+		"		imageCoord += uImageIncrement;",
 
-			"}",
+		"	}",
 
-			"gl_FragColor = sum;",
+		"	gl_FragColor = sum;",
 
 		"}"
 

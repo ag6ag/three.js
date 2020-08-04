@@ -1,7 +1,9 @@
+import { MultiplyOperation, TangentSpaceNormalMap } from '../constants.js';
+import { Material } from './Material.js';
+import { Vector2 } from '../math/Vector2.js';
+import { Color } from '../math/Color.js';
+
 /**
- * @author mrdoob / http://mrdoob.com/
- * @author alteredq / http://alteredqualia.com/
- *
  * parameters = {
  *  color: <hex>,
  *  specular: <hex>,
@@ -24,6 +26,7 @@
  *  bumpScale: <float>,
  *
  *  normalMap: new THREE.Texture( <Image> ),
+ *  normalMapType: THREE.TangentSpaceNormalMap,
  *  normalScale: <Vector2>,
  *
  *  displacementMap: new THREE.Texture( <Image> ),
@@ -34,8 +37,8 @@
  *
  *  alphaMap: new THREE.Texture( <Image> ),
  *
- *  envMap: new THREE.TextureCube( [posx, negx, posy, negy, posz, negz] ),
- *  combine: THREE.Multiply,
+ *  envMap: new THREE.CubeTexture( [posx, negx, posy, negy, posz, negz] ),
+ *  combine: THREE.MultiplyOperation,
  *  reflectivity: <float>,
  *  refractionRatio: <float>,
  *
@@ -48,14 +51,14 @@
  * }
  */
 
-THREE.MeshPhongMaterial = function ( parameters ) {
+function MeshPhongMaterial( parameters ) {
 
-	THREE.Material.call( this );
+	Material.call( this );
 
 	this.type = 'MeshPhongMaterial';
 
-	this.color = new THREE.Color( 0xffffff ); // diffuse
-	this.specular = new THREE.Color( 0x111111 );
+	this.color = new Color( 0xffffff ); // diffuse
+	this.specular = new Color( 0x111111 );
 	this.shininess = 30;
 
 	this.map = null;
@@ -66,7 +69,7 @@ THREE.MeshPhongMaterial = function ( parameters ) {
 	this.aoMap = null;
 	this.aoMapIntensity = 1.0;
 
-	this.emissive = new THREE.Color( 0x000000 );
+	this.emissive = new Color( 0x000000 );
 	this.emissiveIntensity = 1.0;
 	this.emissiveMap = null;
 
@@ -74,7 +77,8 @@ THREE.MeshPhongMaterial = function ( parameters ) {
 	this.bumpScale = 1;
 
 	this.normalMap = null;
-	this.normalScale = new THREE.Vector2( 1, 1 );
+	this.normalMapType = TangentSpaceNormalMap;
+	this.normalScale = new Vector2( 1, 1 );
 
 	this.displacementMap = null;
 	this.displacementScale = 1;
@@ -85,7 +89,7 @@ THREE.MeshPhongMaterial = function ( parameters ) {
 	this.alphaMap = null;
 
 	this.envMap = null;
-	this.combine = THREE.MultiplyOperation;
+	this.combine = MultiplyOperation;
 	this.reflectivity = 1;
 	this.refractionRatio = 0.98;
 
@@ -100,14 +104,16 @@ THREE.MeshPhongMaterial = function ( parameters ) {
 
 	this.setValues( parameters );
 
-};
+}
 
-THREE.MeshPhongMaterial.prototype = Object.create( THREE.Material.prototype );
-THREE.MeshPhongMaterial.prototype.constructor = THREE.MeshPhongMaterial;
+MeshPhongMaterial.prototype = Object.create( Material.prototype );
+MeshPhongMaterial.prototype.constructor = MeshPhongMaterial;
 
-THREE.MeshPhongMaterial.prototype.copy = function ( source ) {
+MeshPhongMaterial.prototype.isMeshPhongMaterial = true;
 
-	THREE.Material.prototype.copy.call( this, source );
+MeshPhongMaterial.prototype.copy = function ( source ) {
+
+	Material.prototype.copy.call( this, source );
 
 	this.color.copy( source.color );
 	this.specular.copy( source.specular );
@@ -129,6 +135,7 @@ THREE.MeshPhongMaterial.prototype.copy = function ( source ) {
 	this.bumpScale = source.bumpScale;
 
 	this.normalMap = source.normalMap;
+	this.normalMapType = source.normalMapType;
 	this.normalScale.copy( source.normalScale );
 
 	this.displacementMap = source.displacementMap;
@@ -156,3 +163,6 @@ THREE.MeshPhongMaterial.prototype.copy = function ( source ) {
 	return this;
 
 };
+
+
+export { MeshPhongMaterial };

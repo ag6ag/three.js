@@ -1,41 +1,37 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
 
 var APP = {
 
 	Player: function () {
 
-		var scope = this;
+		var renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setPixelRatio( window.devicePixelRatio );
+		renderer.outputEncoding = THREE.sRGBEncoding;
 
 		var loader = new THREE.ObjectLoader();
-		var camera, scene, renderer;
+		var camera, scene;
 
-		var vr, controls, effect;
+		var vrButton = VRButton.createButton( renderer );
 
 		var events = {};
 
-		this.dom = undefined;
+		var dom = document.createElement( 'div' );
+		dom.appendChild( renderer.domElement );
+
+		this.dom = dom;
 
 		this.width = 500;
 		this.height = 500;
 
 		this.load = function ( json ) {
 
-			vr = json.project.vr;
+			var project = json.project;
 
-			renderer = new THREE.WebGLRenderer( { antialias: true } );
-			renderer.setClearColor( 0x000000 );
-			renderer.setPixelRatio( window.devicePixelRatio );
-
-			if ( json.project.shadows ) {
-
-				renderer.shadowMap.enabled = true;
-				// renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-			}
-
-			this.dom = renderer.domElement;
+			if ( project.vr !== undefined ) renderer.xr.enabled = project.vr;
+			if ( project.shadows !== undefined ) renderer.shadowMap.enabled = project.shadows;
+			if ( project.shadowType !== undefined ) renderer.shadowMap.type = project.shadowType;
+			if ( project.toneMapping !== undefined ) renderer.toneMapping = project.toneMapping;
+			if ( project.toneMappingExposure !== undefined ) renderer.toneMappingExposure = project.toneMappingExposure;
+			if ( project.physicallyCorrectLights !== undefined ) renderer.physicallyCorrectLights = project.physicallyCorrectLights;
 
 			this.setScene( loader.parse( json.scene ) );
 			this.setCamera( loader.parse( json.camera ) );
@@ -115,42 +111,6 @@ var APP = {
 			camera.aspect = this.width / this.height;
 			camera.updateProjectionMatrix();
 
-			if ( vr === true ) {
-
-				if ( camera.parent === null ) {
-
-					// camera needs to be in the scene so camera2 matrix updates
-
-					scene.add( camera );
-
-				}
-
-				var camera2 = camera.clone();
-				camera.add( camera2 );
-
-				camera = camera2;
-
-				controls = new THREE.VRControls( camera );
-				effect = new THREE.VREffect( renderer );
-
-				document.addEventListener( 'keyup', function ( event ) {
-
-					switch ( event.keyCode ) {
-						case 90:
-							controls.zeroSensor();
-							break;
-					}
-
-				} );
-
-				this.dom.addEventListener( 'dblclick', function () {
-
-					effect.setFullScreen( true );
-
-				} );
-
-			}
-
 		};
 
 		this.setScene = function ( value ) {
@@ -161,15 +121,21 @@ var APP = {
 
 		this.setSize = function ( width, height ) {
 
-			if ( renderer._fullScreen ) return;
-
 			this.width = width;
 			this.height = height;
 
-			camera.aspect = this.width / this.height;
-			camera.updateProjectionMatrix();
+			if ( camera ) {
 
-			renderer.setSize( width, height );
+				camera.aspect = this.width / this.height;
+				camera.updateProjectionMatrix();
+
+			}
+
+			if ( renderer ) {
+
+				renderer.setSize( width, height );
+
+			}
 
 		};
 
@@ -183,11 +149,11 @@ var APP = {
 
 		}
 
-		var prevTime, request;
+		var time, prevTime;
 
-		function animate( time ) {
+		function animate() {
 
-			request = requestAnimationFrame( animate );
+			time = performance.now();
 
 			try {
 
@@ -199,22 +165,17 @@ var APP = {
 
 			}
 
-			if ( vr === true ) {
-
-				controls.update();
-				effect.render( scene, camera );
-
-			} else {
-
-				renderer.render( scene, camera );
-
-			}
+			renderer.render( scene, camera );
 
 			prevTime = time;
 
 		}
 
 		this.play = function () {
+
+			if ( renderer.xr.enabled ) dom.append( vrButton );
+
+			prevTime = performance.now();
 
 			document.addEventListener( 'keydown', onDocumentKeyDown );
 			document.addEventListener( 'keyup', onDocumentKeyUp );
@@ -227,12 +188,13 @@ var APP = {
 
 			dispatch( events.start, arguments );
 
-			request = requestAnimationFrame( animate );
-			prevTime = performance.now();
+			renderer.setAnimationLoop( animate );
 
 		};
 
 		this.stop = function () {
+
+			if ( renderer.xr.enabled ) vrButton.remove();
 
 			document.removeEventListener( 'keydown', onDocumentKeyDown );
 			document.removeEventListener( 'keyup', onDocumentKeyUp );
@@ -245,7 +207,16 @@ var APP = {
 
 			dispatch( events.stop, arguments );
 
-			cancelAnimationFrame( request );
+			renderer.setAnimationLoop( null );
+
+		};
+
+		this.dispose = function () {
+
+			renderer.dispose();
+
+			camera = undefined;
+			scene = undefined;
 
 		};
 
@@ -302,3 +273,5 @@ var APP = {
 	}
 
 };
+
+export { APP };

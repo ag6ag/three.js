@@ -1,8 +1,4 @@
-/**
- * @author alteredq / http://alteredqualia.com/
- */
-
-THREE.Clock = function ( autoStart ) {
+function Clock( autoStart ) {
 
 	this.autoStart = ( autoStart !== undefined ) ? autoStart : true;
 
@@ -12,17 +8,16 @@ THREE.Clock = function ( autoStart ) {
 
 	this.running = false;
 
-};
+}
 
-THREE.Clock.prototype = {
-
-	constructor: THREE.Clock,
+Object.assign( Clock.prototype, {
 
 	start: function () {
 
-		this.startTime = ( performance || Date ).now();
+		this.startTime = ( typeof performance === 'undefined' ? Date : performance ).now(); // see #10732
 
 		this.oldTime = this.startTime;
+		this.elapsedTime = 0;
 		this.running = true;
 
 	},
@@ -31,6 +26,7 @@ THREE.Clock.prototype = {
 
 		this.getElapsedTime();
 		this.running = false;
+		this.autoStart = false;
 
 	},
 
@@ -43,17 +39,18 @@ THREE.Clock.prototype = {
 
 	getDelta: function () {
 
-		var diff = 0;
+		let diff = 0;
 
 		if ( this.autoStart && ! this.running ) {
 
 			this.start();
+			return 0;
 
 		}
 
 		if ( this.running ) {
 
-			var newTime = ( performance || Date ).now();
+			const newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
 
 			diff = ( newTime - this.oldTime ) / 1000;
 			this.oldTime = newTime;
@@ -66,4 +63,7 @@ THREE.Clock.prototype = {
 
 	}
 
-};
+} );
+
+
+export { Clock };
